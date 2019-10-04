@@ -1,0 +1,27 @@
+html,
+body {
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    height: 100%;
+}
+
+nav {
+    margin-bottom: 20px;
+}
+
+.btn.btn-secondary.active.focus {
+    background-color: limegreen;
+}
+
+.my-custom-scrollbar {
+  position: relative;
+  height: 200px;
+  overflow: auto;
+  margin-bottom: 50px;
+}
+
+.table-wrapper-scroll-y {
+  display: block;
+}
+
+
+

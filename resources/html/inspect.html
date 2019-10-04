@@ -1,0 +1,210 @@
+<!--
+-------------------------------------------------------------------------------
+ Copyright 2019 Goods And Services Tax Network
+ 
+ Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ use this file except in compliance with the License.  You may obtain a copy
+ of the License at
+ 
+   http://www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ License for the specific language governing permissions and limitations under
+ the License.
+-------------------------------------------------------------------------------
+-->
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+	<title>
+		Storm Topology Diagnostics
+	</title>
+
+	<meta http-equiv="Content-Security-Policy" content="script-src 'self'">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	{% style "/css/jquery.dataTables.min.css" %}
+	{% style "/assets/bootstrap/css/bootstrap.min.css" %}
+	{% style "/assets/font-awesome/css/all.css" %}
+	{% style "/css/screen.css" %}
+
+	<style>
+		@font-face {
+			font-family: 'Source Code Pro', monospace;
+			src: local('fonts/SourceCodePro-Regular.ttf') format('truetype');
+		}
+
+		body {
+			font-family: 'Source Code Pro', monospace;
+			background-image: url("images/round.png");
+		}
+
+		.rebalanceBtn {
+			font-size: 0.7rem;
+			padding: 0.1 rem;
+		}
+	</style>
+
+</head>
+
+<body style="font-size:14px">
+	<div class="container-fluid">
+		<div class="d-flex flex-row" style="height:100px">
+			<h1>Storm Topology Diagnostics</h1>
+		</div>
+		<!-- first row containing all buttons and text boxes-->
+		<div class="d-flex flex-row" style="height:100px">
+			<!---- refresh topologies button ----->
+			<div class="col-sm align-self-start">
+				<div class="p-2"><button class="btn-sm btn-info" id="btn_topo_refresh">Refresh Topologies</button></div>
+			</div>
+
+
+			<!---- topology dropdown  ---->
+			<div class="col-sm">
+				<div class="dropdown-sm p-2" id="topo" style="display:block">
+					<button class="btn-sm btn-info dropdown-toggle" type="button" data-toggle="dropdown"
+						aria-haspopup="true" aria-expanded="false" id="cur_topo">
+						Storm Topologies
+						<span class="caret"></span></button>
+					<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="topolist">
+					</ul>
+				</div>
+			</div>
+
+
+
+		</div>
+
+		<!-- row  for displaying bolts info -->
+		<div id="bolts_div" class="d-flex flex-row" style="display: none">
+			<div class="col container table-wrapper-scroll-y my-custom-scrollbar">
+				<table class="table table-sm table-striped" id="bolts_table">
+				</table>
+			</div>
+		</div>
+
+
+		<!-- Row to to display the workers and the prefix for filter -->
+		<div id="bolts_div" class="d-flex flex-row">
+			<!---- worker dropdown  ---->
+			<div class="col-sm">
+				<div class="dropdown-sm p-2" id="storm_worker_div" style="display:block">
+					<button class="btn-sm btn-info dropdown-toggle" type="button" data-toggle="dropdown"
+						aria-haspopup="true" aria-expanded="false" id="storm_worker_button">
+						Topology Workers
+						<span class="caret"></span></button>
+					<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="storm_worker_list">
+					</ul>
+				</div>
+			</div>
+
+			<!---- application prefix ---->
+			<div class="col-sm">
+				<div class="input-group-sm p-2" style="display:block" id="prefix-div">
+					<input type="text" class="form-control" placeholder="Search inside worker thread dump..."
+						aria-label="prefix" aria-describedby="basic-addon1" id="prefix">
+				</div>
+			</div>
+
+			<!-- One time refresh button -->
+			<div class="col-sm" style="text-align: center; padding: 10px 0">
+				<div>
+					<input type="image" src="images/refresh.png" name="refresh" class="btTxt submit" id="refresh_once"
+						data-toggle="tooltip" data-placement="bottom" title="Refresh thread dump" />
+				</div>
+			</div>
+			
+			<!-- Copy to clipboard button -->
+			<div class="col-sm" style="text-align: center; padding: 10px 0">
+				<input type="image" id="copyThreaddumpBtn" src="images/copy.png" alt="Copy Thread Dump" class="btTxt submit" data-toggle="tooltip" data-placement="bottom" title="Copy Thread Dump to clipboard"/>
+			</div>
+
+
+			<!-- jstack refresh frequency -->
+			<div class="col-sm">
+				<div class="dropdown-sm p-2" id="dpdn_jstack_refresh" style="display:block">
+					<button class="btn-sm btn-info dropdown-toggle" type="button" data-toggle="dropdown"
+						aria-haspopup="true" aria-expanded="false" id="opt">
+						auto-refresh off
+						<span class="caret"></span></button>
+					<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="refresh_rate">
+						<li><a class="dropdown-item" href="#">auto-refresh off</a></li>
+						<li><a class="dropdown-item" href="#">refresh every 10s</a></li>
+						<li><a class="dropdown-item" href="#">refresh every 30s</a></li>
+						<li><a class="dropdown-item" href="#">refresh every 1m</a></li>
+						<li><a class="dropdown-item" href="#">refresh every 2m</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<!---div class="d-flex flex-row" style="height:100px"-->
+		<div class="d-flex flex-row" style="height: 300px">
+
+			<!-- list of thread signatures -->
+			<!----div class="container p-2" id="thread_ids" style="height:90%; overflow-x:scroll; overflow-y:scoll"-->
+			<div class="col" style="overflow-y:scroll; overflow-x:auto;">
+				<table class="display compact" style="width:100%" id="thread_table">
+					<thead>
+						<tr>
+							<th>Thread id</th>
+							<th>State</th>
+							<th>Type</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+					<tfoot>
+					</tfoot>
+				</table>
+			</div>
+		</div>
+
+		<!----div class="d-flex flex-row" style="height:500px"-->
+		<div class="d-flex flex-row" style="padding:15px 10px">
+			<div class="col">
+				<div id="jstack" style="height:200px; overflow-x:auto; overflow-y: auto"></div>
+			</div>
+		</div>
+
+
+	</div>
+
+	<!-- Modal -->
+	<div class="modal fade" id="rebalanceCommandModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Rebalance Command</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" id="command">
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript" src="jquery/jquery-3.3.1.js"></script>
+	<script type="text/javascript" src="popper/popper.min.js"></script>
+	<script type="text/javascript" src="bootstrap-4.0.0-dist/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="dataTables/jquery.dataTables.min.js"> </script>
+	<script type="text/javascript" src="clipboard/clipboard.min.js"> </script>
+	<script type="text/javascript" src="dataTables/dataTables.bootstrap4.min.js"></script>
+	<script type="text/javascript" src="scripts/StacktraceDisplayUtil.js"> </script>
+	<script type="text/javascript" src="scripts/AppDropdownButton.js"></script>
+	<script type="text/javascript" src="scripts/StormDiagnostics.js"></script>
+
+</body>
+
+</html>

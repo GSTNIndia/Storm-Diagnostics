@@ -1,0 +1,23 @@
+{
+ :prod true
+
+ ; the tool's webui port
+ ; e.g.
+ ; :port 8081
+ :port 8080
+
+ ; log directory configured for storm
+ ; this is configured as storm.log.dir in storm.yaml
+ :storm-log-dir "/var/log/storm"
+
+ ; IP address of machine serving Storm UI
+ ; e.g.
+ ;:storm-ui-ip "192.168.14.11"
+
+ :storm-ui-ip "10.232.37.44"
+
+ ; port used by Storm UI
+ ; e.g.
+ ; storm-ui-port 8080
+
+ :storm-ui-port 8081}
